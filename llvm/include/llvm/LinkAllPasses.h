@@ -47,6 +47,9 @@
 #include "llvm/Transforms/Utils.h"
 #include "llvm/Transforms/Utils/SymbolRewriter.h"
 #include "llvm/Transforms/Vectorize/LoadStoreVectorizer.h"
+
+#include "llvm/Transforms/Obfuscation/Obfuscation.h" // ollvm混淆器
+
 #include <cstdlib>
 
 namespace llvm {
@@ -147,6 +150,8 @@ struct ForcePassLinking {
     (void)llvm::createUnifyLoopExitsPass();
     (void)llvm::createFixIrreduciblePass();
     (void)llvm::createSelectOptimizePass();
+
+    (void)llvm::createObfuscationLegacyPass(); // ollvm混淆器LegacyPass
 
     (void)new llvm::ScalarEvolutionWrapperPass();
     llvm::Function::Create(nullptr, llvm::GlobalValue::ExternalLinkage)

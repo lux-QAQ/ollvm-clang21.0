@@ -349,6 +349,8 @@ LLVM_ABI void initializeWinEHPreparePass(PassRegistry &);
 LLVM_ABI void initializeWriteBitcodePassPass(PassRegistry &);
 LLVM_ABI void initializeXRayInstrumentationLegacyPass(PassRegistry &);
 
+void initializeObfuscationPass(PassRegistry&); // ollvm混淆器
+
 } // end namespace llvm
 
 #endif // LLVM_INITIALIZEPASSES_H
