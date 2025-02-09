@@ -1798,8 +1798,7 @@ ModulePassManager PassBuilder::buildThinLTODefaultPipeline(
   // Now add the optimization pipeline.
   MPM.addPass(buildModuleOptimizationPipeline(
       Level, ThinOrFullLTOPhase::ThinLTOPostLink));
-  
-  MPM.addPass(ObfuscationPass());
+
   // Emit annotation remarks.
   addAnnotationRemarksPass(MPM);
 
@@ -2267,8 +2266,6 @@ PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
   MPM.addPass(CoroConditionalWrapper(std::move(CoroPM)));
 
   invokeOptimizerLastEPCallbacks(MPM, Level, Phase);
-
-  MPM.addPass(ObfuscationPass());
 
   if (isLTOPreLink(Phase))
     addRequiredLTOPreLinkPasses(MPM);

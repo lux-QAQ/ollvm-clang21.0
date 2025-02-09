@@ -146,7 +146,7 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 
-#include "llvm/Transforms/Obfuscation/Obfuscation.h" // ollvm混淆器
+#include "llvm/Transforms/Obfuscation/Obfuscation.h"
 
 using namespace llvm;
 
@@ -1640,8 +1640,7 @@ PassBuilder::buildPerModuleDefaultPipeline(OptimizationLevel Level,
   if (PGOOpt && PGOOpt->PseudoProbeForProfiling &&
       PGOOpt->Action == PGOOptions::SampleUse)
     MPM.addPass(PseudoProbeUpdatePass());
-  
-  MPM.addPass(ObfuscationPass());
+
   // Emit annotation remarks.
   addAnnotationRemarksPass(MPM);
 
@@ -1674,7 +1673,6 @@ PassBuilder::buildFatLTODefaultPipeline(OptimizationLevel Level, bool ThinLTO,
     // otherwise, just use module optimization
     MPM.addPass(
         buildModuleOptimizationPipeline(Level, ThinOrFullLTOPhase::None));
-    MPM.addPass(ObfuscationPass());
     // Emit annotation remarks.
     addAnnotationRemarksPass(MPM);
   }
@@ -1734,7 +1732,7 @@ PassBuilder::buildThinLTOPreLinkDefaultPipeline(OptimizationLevel Level) {
                                   /*Phase=*/ThinOrFullLTOPhase::ThinLTOPreLink);
   invokeOptimizerLastEPCallbacks(MPM, Level,
                                  /*Phase=*/ThinOrFullLTOPhase::ThinLTOPreLink);
-  MPM.addPass(ObfuscationPass());
+
   // Emit annotation remarks.
   addAnnotationRemarksPass(MPM);
 
@@ -1783,8 +1781,6 @@ ModulePassManager PassBuilder::buildThinLTODefaultPipeline(
     // globals in the object file.
     MPM.addPass(EliminateAvailableExternallyPass());
     MPM.addPass(GlobalDCEPass());
-
-    MPM.addPass(ObfuscationPass());
     return MPM;
   }
   if (!UseCtxProfile.empty()) {
@@ -1798,8 +1794,7 @@ ModulePassManager PassBuilder::buildThinLTODefaultPipeline(
   // Now add the optimization pipeline.
   MPM.addPass(buildModuleOptimizationPipeline(
       Level, ThinOrFullLTOPhase::ThinLTOPostLink));
-  
-  MPM.addPass(ObfuscationPass());
+
   // Emit annotation remarks.
   addAnnotationRemarksPass(MPM);
 
@@ -2267,8 +2262,6 @@ PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
   MPM.addPass(CoroConditionalWrapper(std::move(CoroPM)));
 
   invokeOptimizerLastEPCallbacks(MPM, Level, Phase);
-
-  MPM.addPass(ObfuscationPass());
 
   if (isLTOPreLink(Phase))
     addRequiredLTOPreLinkPasses(MPM);

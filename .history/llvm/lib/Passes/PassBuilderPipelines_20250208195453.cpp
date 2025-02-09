@@ -2268,8 +2268,6 @@ PassBuilder::buildO0DefaultPipeline(OptimizationLevel Level,
 
   invokeOptimizerLastEPCallbacks(MPM, Level, Phase);
 
-  MPM.addPass(ObfuscationPass());
-
   if (isLTOPreLink(Phase))
     addRequiredLTOPreLinkPasses(MPM);
 

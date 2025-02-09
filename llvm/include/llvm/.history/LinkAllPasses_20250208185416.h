@@ -146,7 +146,7 @@ struct ForcePassLinking {
     (void)llvm::createFixIrreduciblePass();
     (void)llvm::createSelectOptimizePass();
 
-    (void)llvm::createObfuscationLegacyPass(); // ollvm混淆器LegacyPass
+    (void)llvm::createObfuscationLegacyPass(); // ollvm混淆器
 
     (void)new llvm::ScalarEvolutionWrapperPass();
     llvm::Function::Create(nullptr, llvm::GlobalValue::ExternalLinkage)

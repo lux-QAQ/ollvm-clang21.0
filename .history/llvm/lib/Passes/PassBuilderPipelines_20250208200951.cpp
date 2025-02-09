@@ -1674,7 +1674,7 @@ PassBuilder::buildFatLTODefaultPipeline(OptimizationLevel Level, bool ThinLTO,
     // otherwise, just use module optimization
     MPM.addPass(
         buildModuleOptimizationPipeline(Level, ThinOrFullLTOPhase::None));
-    MPM.addPass(ObfuscationPass());
+    //MPM.addPass(ObfuscationPass()); // 在Fat LTO
     // Emit annotation remarks.
     addAnnotationRemarksPass(MPM);
   }

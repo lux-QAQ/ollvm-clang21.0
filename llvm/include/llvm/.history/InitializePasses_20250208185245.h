@@ -324,7 +324,7 @@ void initializeWinEHPreparePass(PassRegistry &);
 void initializeWriteBitcodePassPass(PassRegistry &);
 void initializeXRayInstrumentationPass(PassRegistry &);
 
-void initializeObfuscationPass(PassRegistry&); // ollvm混淆器
+void initializeObfuscationPass(PassRegistry&); //
 
 } // end namespace llvm
 

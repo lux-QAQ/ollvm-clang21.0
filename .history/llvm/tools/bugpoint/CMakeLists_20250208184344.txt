@@ -21,7 +21,6 @@ set(LLVM_LINK_COMPONENTS
   TargetParser
   TransformUtils
   Vectorize
-  Obfuscation
   )
 
 add_llvm_tool(bugpoint
