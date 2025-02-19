@@ -25,6 +25,13 @@
 #ifndef LLVM_TRANSFORMS_OBFUSCATION_COMPAT_CALLSITE_H
 #define LLVM_TRANSFORMS_OBFUSCATION_COMPAT_CALLSITE_H
 
+#if LLVM_VERSION_MAJOR >= 18
+#define OBFUSCATION_NOCAPTURE Attribute::Captures
+#else
+#define OBFUSCATION_NOCAPTURE Attribute::NoCapture
+#endif
+
+
 #if LLVM_VERSION_MAJOR >= 17
 #include <optional>
 #else
@@ -591,7 +598,7 @@ public:
 
   /// Determine whether this data operand is not captured.
   bool doesNotCapture(unsigned OpNo) const {
-    return dataOperandHasImpliedAttr(OpNo + 1, Attribute::NoCapture);
+    return dataOperandHasImpliedAttr(OpNo + 1, OBFUSCATION_NOCAPTURE);
   }
 
   /// Determine whether this argument is passed by value.
