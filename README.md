@@ -52,7 +52,35 @@
 ---
 
 ### 如何自己编译
+#### Linux 平台（满血版本）
+> 注意有个抽象的工具polly没有启用，因为会导致编译错误，除此之外所有项目都编译了。包括`Z3静态分析器`，所以你需要提前使用`apt`安装`z3`
+**所需工具**：编译所需的基本东西`build-essential`、`clang18`（我是使用`apt`安装的`clang18`编译成功的，`gcc`或者其他编译器自行研究）
+找个空间大的地方
+```shell
+git clone https://github.com/lux-QAQ/ollvm-clang21.0.git -b clang+ollvm-21.0.0 --depth 1 --recursive
+```
+创建个build文件夹
+```shell
+mkdir build
+cd build
+```
+执行cmake配置，更改`-DCMAKE_INSTALL_PREFIX=`来改变安装位置
+```shell
+cmake -G "Ninja"   -DCMAKE_INSTALL_PREFIX=$HOME/llvm   -DLLVM_ENABLE_PROJECTS="bolt;clang;clang-tools-extra;compiler-rt;cross-project-tests;libc;libclc;lld;lldb;mlir;pstl;flang;openmp;bolt"   -DLLVM_ENABLE_RUNTIMES="all"   -DLLVM_ENABLE_Z3_SOLVER=ON   -DLLVM_FORCE_BUILD_RUNTIME=ON      -DCMAKE_C_COMPILER=/home/ljs/llvm/bin/clang   -DCMAKE_CXX_COMPILER=/home/ljs/llvm/bin/clang++   -DCMAKE_CXX_COMPILER_TARGET=x86_64-pc-linux-gnu   -DCMAKE_C_COMPILER_TARGET=x86_64-pc-linux-gnu   -DCMAKE_CXX_FLAGS="-O3 -march=native  "   -DCMAKE_C_FLAGS="-O3 -march=native  "   -DLLVM_PROFILE_GENERATE=OFF   -DLIBCXX_INSTALL_MODULES=ON   -DCMAKE_AR=/home/ljs/llvm/bin/llvm-ar   -DCMAKE_RANLIB=/home/ljs/llvm/bin/llvm-ranlib   -DLLVM_ENABLE_OPENMP=ON   -DLLVM_ENABLE_LIBUNWIND=ON -DBOOTSTRAP_LLVM_ENABLE_LTO="Thin"  -DLLVM_ENABLE_LIBCXXABI=ON     -DCMAKE_BUILD_TYPE=Release   -DLLVM_BUILD_LLVM_DYLIB=ON   -DLLVM_LINK_LLVM_DYLIB=ON   -DLLVM_ENABLE_EXCEPTIONS=ON -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE  -DCMAKE_SHARED_LINKER_FLAGS="-Wl"    ../llvm
+```
 
+
+然后启动编译**请你根据你的内存决定编译并发数目**，建议32GB内存以下不要超过12线程
+``` shell
+ninja -j10
+```
+
+等待半个小时如果一切顺利的话。
+然后执行安装
+``` shell
+ninja install
+```
+#### Windows 平台
 和这篇文章差不多。详细步骤可参考：
 [构建含有ollvm功能的clang-cl](https://www.bilibili.com/opus/943544163969794072)
 
