@@ -52,6 +52,7 @@
 ---
 
 ### 如何自己编译
+---
 #### Linux 平台（满血版本）
 > 注意有个抽象的工具polly没有启用，因为会导致编译错误，除此之外所有项目都编译了。包括`Z3静态分析器`，所以你需要提前使用`apt`安装`z3`
 **所需工具**：编译所需的基本东西`build-essential`、`clang18`（我是使用`apt`安装的`clang18`编译成功的，`gcc`或者其他编译器自行研究）
@@ -81,6 +82,7 @@ ninja -j10
 ``` shell
 ninja install
 ```
+---
 #### Windows 平台
 和这篇文章差不多。详细步骤可参考：
 [构建含有ollvm功能的clang-cl](https://www.bilibili.com/opus/943544163969794072)
