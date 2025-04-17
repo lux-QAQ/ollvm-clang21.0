@@ -264,7 +264,7 @@ struct FunctionCallObfuscate : public FunctionPass {
     if (!this->initialized)
       initialize(*M);
     if (!triple.isAndroid() && !triple.isOSDarwin()) {
-      errs() << "Unsupported Target Triple: " << M->getTargetTriple() << "\n";
+      errs() << "Unsupported Target Triple: " << M->getTargetTriple().str() << "\n";
       return false;
     }
     FixFunctionConstantExpr(&F);
@@ -333,7 +333,7 @@ struct FunctionCallObfuscate : public FunctionPass {
                 dlopen_flag = ANDROID32_FLAG;
             } else {
               errs() << "[FunctionCallObfuscate] Unsupported Target Triple:"
-                     << M->getTargetTriple() << "\n";
+                     << M->getTargetTriple().str() << "\n";
               errs() << "[FunctionCallObfuscate] Applying Default Signature:"
                      << dlopen_flag << "\n";
             }
