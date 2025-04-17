@@ -149,7 +149,7 @@ struct AntiDebugging : public ModulePass {
         return false;
       if (triple.isOSDarwin() && triple.isAArch64()) {
         errs() << "Injecting Inline Assembly AntiDebugging For:"
-               << F.getParent()->getTargetTriple() << "\n";
+               << F.getParent()->getTargetTriple().str() << "\n";
         std::string antidebugasm = "";
         switch (cryptoutils->get_range(2)) {
         case 0: {
@@ -258,7 +258,7 @@ struct AntiDebugging : public ModulePass {
 #endif
       } else {
         errs() << "Unsupported Inline Assembly AntiDebugging Target: "
-               << F.getParent()->getTargetTriple() << "\n";
+               << F.getParent()->getTargetTriple().str() << "\n";
       }
     }
     return true;
