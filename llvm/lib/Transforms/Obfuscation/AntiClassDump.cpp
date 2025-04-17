@@ -54,7 +54,7 @@ struct AntiClassDump : public ModulePass {
     if (triple.getVendor() != Triple::VendorType::Apple) {
       // We only support AAPL's ObjC Implementation ATM
       errs()
-          << M.getTargetTriple()
+          << M.getTargetTriple().str()
           << " is Not Supported For LLVM AntiClassDump\nProbably GNU Step?\n";
       return false;
     }
