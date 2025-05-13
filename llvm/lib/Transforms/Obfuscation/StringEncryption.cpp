@@ -408,15 +408,22 @@ struct StringEncryption : public ModulePass {
             opaquepointers
                 ? GV->getInitializer()
                 : cast<ConstantExpr>(GV->getInitializer()->getOperand(0)));
-        if (C) {
+                if (C) {
           PtrauthGV = dyn_cast<GlobalVariable>(C->getOperand(0));
-          if (PtrauthGV->getSection() == "llvm.ptrauth") {
+          if (PtrauthGV && PtrauthGV->getSection() == "llvm.ptrauth") { // Added null check for PtrauthGV
+            Module *M = GV->getParent(); // Get Module pointer
             if (ConstantExpr *CE = dyn_cast<ConstantExpr>(
                     PtrauthGV->getInitializer()->getOperand(2))) {
               if (GlobalVariable *GV2 =
                       dyn_cast<GlobalVariable>(CE->getOperand(0))) {
-                if (GV->getNumUses() <= 1 &&
-                    GV2->getGlobalIdentifier() == GV->getGlobalIdentifier())
+                // Use static public method GlobalValue::getGlobalIdentifier
+                std::string GV2_Identifier = GlobalValue::getGlobalIdentifier(
+                    GV2->getName(), GV2->getLinkage(),
+                    GV2->getParent() ? GV2->getParent()->getSourceFileName() : "");// 这个地方实际上考虑使用getGUID ,但是担心hash冲突(好像也不用担心,可能性太小了,但是还是按照原来的使用这个getGlobalIdentifier)
+                std::string GV_Identifier = GlobalValue::getGlobalIdentifier(
+                    GV->getName(), GV->getLinkage(),
+                    GV->getParent() ? GV->getParent()->getSourceFileName() : "");
+                if (GV->getNumUses() <= 1 && GV2_Identifier == GV_Identifier)
                   PtrauthGV->getInitializer()->setOperand(
                       2, ConstantExpr::getPtrToInt(
                              M->getGlobalVariable(
@@ -424,14 +431,21 @@ struct StringEncryption : public ModulePass {
                              Type::getInt64Ty(M->getContext())));
               }
             } else if (GlobalVariable *GV2 = dyn_cast<GlobalVariable>(
-                           PtrauthGV->getInitializer()->getOperand(2)))
-              if (GV->getNumUses() <= 1 &&
-                  GV2->getGlobalIdentifier() == GV->getGlobalIdentifier())
+                           PtrauthGV->getInitializer()->getOperand(2))) {
+              // Use static public method GlobalValue::getGlobalIdentifier
+              std::string GV2_Identifier = GlobalValue::getGlobalIdentifier(
+                  GV2->getName(), GV2->getLinkage(),
+                  GV2->getParent() ? GV2->getParent()->getSourceFileName() : "");
+              std::string GV_Identifier = GlobalValue::getGlobalIdentifier(
+                  GV->getName(), GV->getLinkage(),
+                  GV->getParent() ? GV->getParent()->getSourceFileName() : "");
+              if (GV->getNumUses() <= 1 && GV2_Identifier == GV_Identifier)
                 PtrauthGV->getInitializer()->setOperand(
                     2, ConstantExpr::getPtrToInt(
                            M->getGlobalVariable(
                                "__CFConstantStringClassReference"),
                            Type::getInt64Ty(M->getContext())));
+            }
           }
         }
       }
