@@ -416,7 +416,7 @@ struct StringEncryption : public ModulePass {
               if (GlobalVariable *GV2 =
                       dyn_cast<GlobalVariable>(CE->getOperand(0))) {
                 if (GV->getNumUses() <= 1 &&
-                    GV2->getGlobalIdentifier() == GV->getGlobalIdentifier())
+                    GV2->getGUID() == GV->getGUID())
                   PtrauthGV->getInitializer()->setOperand(
                       2, ConstantExpr::getPtrToInt(
                              M->getGlobalVariable(
@@ -426,7 +426,7 @@ struct StringEncryption : public ModulePass {
             } else if (GlobalVariable *GV2 = dyn_cast<GlobalVariable>(
                            PtrauthGV->getInitializer()->getOperand(2)))
               if (GV->getNumUses() <= 1 &&
-                  GV2->getGlobalIdentifier() == GV->getGlobalIdentifier())
+                  GV2->getGUID() == GV->getGUID())
                 PtrauthGV->getInitializer()->setOperand(
                     2, ConstantExpr::getPtrToInt(
                            M->getGlobalVariable(
