@@ -453,6 +453,7 @@ struct AntiClassDump : public ModulePass {
     }
     errs() << "Updated Class Method Map of:" << class_ro->getName() << "\n";
     // End ClassCS Handling
+    delete IRB; // Delete IRB at the end of the function
   } // handleClass
   void HandleMethods(ConstantStruct *class_ro, IRBuilder<> *IRB, Module *M,
                      Value *Class, bool isMetaClass) {

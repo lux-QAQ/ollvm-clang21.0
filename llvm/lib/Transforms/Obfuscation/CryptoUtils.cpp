@@ -23,8 +23,10 @@ uint32_t CryptoUtils::scramble32(
   }
 }
 CryptoUtils::~CryptoUtils() {
-  if (eng != nullptr)
+  if (eng != nullptr) {
     delete eng;
+    eng = nullptr;
+  }
 }
 void CryptoUtils::prng_seed() {
   using namespace std::chrono;
@@ -34,10 +36,18 @@ void CryptoUtils::prng_seed() {
   errs() << format("std::mt19937_64 seeded with current timestamp: %" PRIu64 "",
                    ms)
          << "\n";
+  if (eng != nullptr) { //  check nullptr
+    delete eng;
+    eng = nullptr;
+  }
   eng = new std::mt19937_64(ms);
 }
 void CryptoUtils::prng_seed(std::uint_fast64_t seed) {
   errs() << format("std::mt19937_64 seeded with: %" PRIu64 "", seed) << "\n";
+  if (eng != nullptr) { //  check nullptr
+    delete eng;
+    eng = nullptr;
+  }
   eng = new std::mt19937_64(seed);
 }
 std::uint_fast64_t CryptoUtils::get_raw() {

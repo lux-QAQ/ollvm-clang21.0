@@ -37,7 +37,7 @@ struct FunctionWrapper : public ModulePass {
   FunctionWrapper() : ModulePass(ID) { this->flag = true; }
   FunctionWrapper(bool flag) : ModulePass(ID) { this->flag = flag; }
   StringRef getPassName() const override { return "FunctionWrapper"; }
-  bool runOnModule(Module &M) override {
+/*   bool runOnModule(Module &M) override {
     SmallVector<CallSite *, 16> callsites;
     for (Function &F : M) {
       if (toObfuscate(flag, &F, "fw")) {
@@ -59,7 +59,61 @@ struct FunctionWrapper : public ModulePass {
       for (uint32_t i = 0; i < ObfTimes && CS != nullptr; i++)
         CS = HandleCallSite(CS);
     return true;
+  } // End of runOnModule */
+     bool runOnModule(Module &M) override {
+    SmallVector<CallSite *, 16> callsites_to_process; // Stores CallSite objects to be processed and managed
+    for (Function &F : M) {
+      if (toObfuscate(flag, &F, "fw")) {
+        errs() << "Running FunctionWrapper On " << F.getName() << "\n";
+        if (!toObfuscateUint32Option(&F, "fw_prob", &ProbRateTemp))
+          ProbRateTemp = ProbRate;
+        if (ProbRateTemp > 100) {
+          errs() << "FunctionWrapper application CallSite percentage "
+                    "-fw_prob=x must be 0 < x <= 100";
+          return false;
+        }
+        for (Instruction &Inst : instructions(F))
+          if ((isa<CallInst>(&Inst) || isa<InvokeInst>(&Inst)))
+            if (cryptoutils->get_range(100) <= ProbRateTemp)
+              callsites_to_process.emplace_back(new CallSite(&Inst)); // Initial allocation
+      }
+    }
+
+    // Process each CallSite. The pointers in callsites_to_process will be updated.
+    for (size_t i = 0; i < callsites_to_process.size(); ++i) {
+      CallSite *current_cs_object = callsites_to_process[i];
+
+      for (uint32_t j = 0; j < ObfTimes; ++j) {
+        if (current_cs_object == nullptr) {
+          break; // No CallSite to process further for this original instruction
+        }
+
+        CallSite *next_cs_object = HandleCallSite(current_cs_object);
+
+        // The CallSite object pointed to by current_cs_object has been processed.
+        // HandleCallSite returns a new CallSite object (or nullptr).
+        // The old current_cs_object (which was passed to HandleCallSite) must be deleted.
+        delete current_cs_object;
+
+        current_cs_object = next_cs_object; // Move to the new CallSite object
+      }
+      // Store the final CallSite* (or nullptr) back into the vector.
+      // This final object will be cleaned up in the loop after this one.
+      callsites_to_process[i] = current_cs_object;
+    }
+
+    // After all transformations, delete any remaining CallSite objects.
+    // These are the final CallSite objects after ObfTimes iterations (or nullptr).
+    for (CallSite *cs : callsites_to_process) {
+      if (cs != nullptr) {
+        delete cs;
+      }
+    }
+    callsites_to_process.clear(); // Clear the vector of pointers
+
+    return true;
   } // End of runOnModule
+
   CallSite *HandleCallSite(CallSite *CS) {
     Value *calledFunction = CS->getCalledFunction();
     if (calledFunction == nullptr)
@@ -146,7 +200,7 @@ struct FunctionWrapper : public ModulePass {
     CS->setCalledFunction(func);
     CS->mutateFunctionType(ft);
     Instruction *Inst = CS->getInstruction();
-    delete CS;
+    //delete CS;
     return new CallSite(Inst);
   }
 };

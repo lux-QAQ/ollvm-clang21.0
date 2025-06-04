@@ -119,7 +119,8 @@ struct Obfuscation : public ModulePass {
     ModulePass *MP = createAntiHookPass(EnableAntiHooking);
     MP->doInitialization(M);
     MP->runOnModule(M);
-    delete MP;
+    delete MP; 
+
     // Initial ACD Pass
     if (EnableAllObfuscation || EnableAntiClassDump) {
       ModulePass *P = createAntiClassDumpPass();
@@ -198,6 +199,8 @@ struct Obfuscation : public ModulePass {
            << format("%.7f", timer->getTotalTime().getWallTime()) << "s"
            << "\n";
     tg->clearAll();
+    delete timer;
+    delete tg;
     return true;
   } // End runOnModule
 };
