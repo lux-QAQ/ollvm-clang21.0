@@ -214,7 +214,10 @@ ModulePass *createObfuscationLegacyPass() {
 }
 
 PreservedAnalyses ObfuscationPass::run(Module &M, ModuleAnalysisManager &MAM) {
-  if (createObfuscationLegacyPass()->runOnModule(M)) {
+  ModulePass *MP = createObfuscationLegacyPass();
+  bool Changed = MP->runOnModule(M);
+  delete MP; // 添加 delete 语句以释放分配的内存 防止内存泄漏
+  if (Changed) {
     return PreservedAnalyses::none();
   }
   return PreservedAnalyses::all();
