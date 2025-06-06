@@ -89,4 +89,5 @@ pythonenv*
 /lldb/docs/python_api/
 
 # .history files
+*/.history/*
 .history/*
