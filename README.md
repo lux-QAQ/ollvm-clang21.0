@@ -19,8 +19,10 @@
 	ollvm是一个基于llvm的代码混淆器，用于反调试和反编译。
 
 
-## Hikari-LLVM15 项目地址
+## ~~Hikari-LLVM15 项目地址~~[已失效]
 [Hikari-LLVM15](https://github.com/61bcdefg/Hikari-LLVM15)这个是混淆器的核心实现。 
+
+**预计将会在2025年的7月假期, 把`Ssage`版本的OLLVM移植过来, 增加新功能**
 
 
 ---
