@@ -30,6 +30,10 @@
 #define OBFUSCATION_NOCAPTURE Attribute::NoCapture
 #endif
 
+// Avoid clangd error due to non-selfcontained headers
+#ifndef LLVM_CONFIG_H
+#include "llvm/Config/config.h"
+#endif
 
 #if LLVM_VERSION_MAJOR >= 17
 #include <optional>
@@ -137,16 +141,14 @@ public:
   /// name on CallBase, does not modify the type!
   void setCalledFunction(Value *V) {
     assert(getInstruction() && "Not a call, callbr, or invoke instruction!");
-#if LLVM_VERSION_MAJOR >= 15
-    assert(cast<PointerType>(V->getType())
-               ->isOpaqueOrPointeeTypeMatches(
-                   cast<CallBase>(getInstruction())->getFunctionType()) &&
-           "New callee type does not match FunctionType on call");
-#else
-    assert(cast<PointerType>(V->getType())->getElementType() ==
-               cast<CallBase>(getInstruction())->getFunctionType() &&
+#if LLVM_VERSION_MAJOR < 17
+    // LLVM 17+ uses opaque pointer, no need to do type check
+    auto *PtrTy = cast<PointerType>(V->getType());
+    auto *FuncTy = cast<CallBase>(getInstruction())->getFunctionType();
+    assert(PtrTy->getElementType() == FuncTy &&
            "New callee type does not match FunctionType on call");
 #endif
+
     *getCallee() = V;
   }
 
@@ -572,7 +574,7 @@ public:
   Optional<OperandBundleUse> getOperandBundle(uint32_t ID) const {
     CALLSITE_DELEGATE_GETTER(getOperandBundle(ID));
   }
-  #endif
+#endif
 
   unsigned countOperandBundlesOfType(uint32_t ID) const {
     CALLSITE_DELEGATE_GETTER(countOperandBundlesOfType(ID));
