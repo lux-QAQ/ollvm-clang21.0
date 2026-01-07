@@ -1,4 +1,4 @@
-//===--- PortabilityTidyModule.cpp - clang-tidy ---------------------------===//
+//===----------------------------------------------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -8,7 +8,6 @@
 
 #include "../ClangTidy.h"
 #include "../ClangTidyModule.h"
-#include "../ClangTidyModuleRegistry.h"
 #include "AvoidPragmaOnceCheck.h"
 #include "RestrictSystemIncludesCheck.h"
 #include "SIMDIntrinsicsCheck.h"
@@ -17,6 +16,7 @@
 
 namespace clang::tidy {
 namespace portability {
+namespace {
 
 class PortabilityModule : public ClangTidyModule {
 public:
@@ -34,6 +34,8 @@ public:
   }
 };
 
+} // namespace
+
 // Register the PortabilityModule using this statically initialized variable.
 static ClangTidyModuleRegistry::Add<PortabilityModule>
     X("portability-module", "Adds portability-related checks.");
@@ -42,6 +44,7 @@ static ClangTidyModuleRegistry::Add<PortabilityModule>
 
 // This anchor is used to force the linker to link in the generated object file
 // and thus register the PortabilityModule.
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 volatile int PortabilityModuleAnchorSource = 0;
 
 } // namespace clang::tidy

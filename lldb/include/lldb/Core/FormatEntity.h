@@ -80,6 +80,8 @@ struct Entry {
     FrameRegisterFlags,
     FrameRegisterByName,
     FrameIsArtificial,
+    FrameKind,
+    FrameBorrowedInfo,
     ScriptFrame,
     FunctionID,
     FunctionDidChange,
@@ -91,6 +93,7 @@ struct Entry {
     FunctionPrefix,
     FunctionScope,
     FunctionBasename,
+    FunctionNameQualifiers,
     FunctionTemplateArguments,
     FunctionFormattedArguments,
     FunctionReturnLeft,
@@ -104,6 +107,7 @@ struct Entry {
     FunctionInitial,
     FunctionChanged,
     FunctionIsOptimized,
+    FunctionIsInlined,
     LineEntryFile,
     LineEntryLineNumber,
     LineEntryColumn,
@@ -205,6 +209,8 @@ struct Entry {
     return true;
   }
 
+  operator bool() const { return type != Type::Invalid; }
+
   std::vector<Entry> &GetChildren();
 
   std::string string;
@@ -217,20 +223,37 @@ struct Entry {
   size_t level = 0;
   /// @}
 
-  Type type;
+  Type type = Type::Invalid;
   lldb::Format fmt = lldb::eFormatDefault;
   lldb::addr_t number = 0;
   bool deref = false;
 };
 
-bool Format(const Entry &entry, Stream &s, const SymbolContext *sc,
-            const ExecutionContext *exe_ctx, const Address *addr,
-            ValueObject *valobj, bool function_changed, bool initial_function);
+class Formatter {
+public:
+  Formatter(const SymbolContext *sc, const ExecutionContext *exe_ctx,
+            const Address *addr, bool function_changed, bool initial_function)
+      : m_sc(sc), m_exe_ctx(exe_ctx), m_addr(addr),
+        m_function_changed(function_changed),
+        m_initial_function(initial_function) {}
 
-bool FormatStringRef(const llvm::StringRef &format, Stream &s,
-                     const SymbolContext *sc, const ExecutionContext *exe_ctx,
-                     const Address *addr, ValueObject *valobj,
-                     bool function_changed, bool initial_function);
+  bool Format(const Entry &entry, Stream &s, ValueObject *valobj = nullptr);
+
+  bool FormatStringRef(const llvm::StringRef &format, Stream &s,
+                       ValueObject *valobj);
+
+private:
+  bool DumpValue(Stream &s, const FormatEntity::Entry &entry,
+                 ValueObject *valobj);
+
+  bool FormatFunctionNameForLanguage(Stream &s);
+
+  const SymbolContext *const m_sc = nullptr;
+  const ExecutionContext *const m_exe_ctx = nullptr;
+  const Address *const m_addr = nullptr;
+  const bool m_function_changed = false;
+  const bool m_initial_function = false;
+};
 
 Status Parse(const llvm::StringRef &format, Entry &entry);
 
