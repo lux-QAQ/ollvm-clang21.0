@@ -10,7 +10,7 @@
 中文 | [English](./README_en.md)
 
 
-[旧的 ollvm](https://github.com/GreenDamTan/llvm-project_ollvm) 最高到 `llvm+clang17.06` 的，而 llvm+clang17.06 的版本太老了，为了学习`c++`的新特性`import`，所以我决定将 [ollvm(Hikari)](https://github.com/61bcdefg/Hikari-LLVM15) ~~复制~~移植到 llvm+clang21.0 上。    
+[旧的 ollvm](https://github.com/GreenDamTan/llvm-project_ollvm) 最高到 `llvm+clang17.06` 的，而 llvm+clang17.06 的版本太老了，为了学习`c++`的新特性`import`，所以我决定将 [ollvm(Hikari)](https://github.com/61bcdefg/Hikari-LLVM15) ~~复制~~移植到 llvm+clang23.0 上。    
 如果你觉得本项目对你有帮助请点个`star`⭐。
 
 
@@ -61,7 +61,7 @@
    
 找个空间大的地方
 ```shell
-git clone https://github.com/lux-QAQ/ollvm-clang21.0.git -b clang+ollvm-21.0.0 --depth 1 --recursive
+git clone https://github.com/ollvm-adaplite/ollvm-clang.git -b clang+ollvm-23.0.0 --depth 1 --recursive
 ```
 创建个build文件夹
 ```shell
@@ -103,7 +103,7 @@ ninja install
 
 找个空间大的地方
 ```shell
-git clone https://github.com/lux-QAQ/ollvm-clang21.0.git -b clang+ollvm-21.0.0 --depth 1 --recursive
+git clone https://github.com/ollvm-adaplite/ollvm-clang.git -b clang+ollvm-23.0.0 --depth 1 --recursive
 ```
 创建个build文件夹
 ```shell
@@ -124,7 +124,7 @@ cmake -DLLVM_ENABLE_PROJECTS="clang;lld;" -DLLVM_INCLUDE_DOCS=OFF -DLLVM_INCLUDE
 首次编译预计会花费20分钟左右。
 
 编译后在Release/bin目录下会有`clang.exe`和`clang++.exe`，生成。你需要下载官方的`llvm+clang`，然后把你自己编译产物替换到官方的`llvm+clang`的bin中即可。
-> 截至2025年2月，官方发布的Release版本是LLVM 20.1.0-rc1。但是我使用的是官方main分支编译的，所以版本号是21.0.0。故这里可能存在一些未知的兼容性问题。
+> 截至2025年2月，官方发布的Release版本是LLVM 20.1.0-rc1。但是我使用的是官方main分支编译的，所以版本号是23.0.0。故这里可能存在一些未知的兼容性问题。
 
 
 ---
@@ -137,7 +137,8 @@ Ollvm虽然不及很多商业混淆器，但是效果仍然非常强，对付普
 ![2](https://github.com/user-attachments/assets/c334d06b-3199-409f-8ba5-7bac49265af3)
 
 ### 字符串加密
-![3](https://github.com/user-attachments/assets/744419c4-a30f-45de-a467-651c8bf5ee9a)
+<img width="1934" height="788" alt="屏幕截图 2026-03-28 164100" src="https://github.com/user-attachments/assets/c255b70c-4b06-438f-91e4-911cb0ab23eb" />
+
 
 
 ---
@@ -154,7 +155,7 @@ Ollvm虽然不及很多商业混淆器，但是效果仍然非常强，对付普
 ---
 
 ### 关于移植中的一些问题
-我发现llvm17.06和21.0的`llvm/lib/Passes/PassBuilderPipelines.cpp`一些代码已经不一样了。根据我粗浅的理解：这里需要确定何种情况下向`MPM`中导入`ObfuscationPass()`。我按照`llvm+clang17`的版本中的情况，将`ObfuscationPass()`导入到了`MPM`中。但是，有一些21.0新增的情况我不知道是否应该添加`ObfuscationPass()`到`MPM`中（我选择的是不添加）。所以这里可能存在一些问题，会导致混淆性能下降。
+我发现llvm17.06和23.0的`llvm/lib/Passes/PassBuilderPipelines.cpp`一些代码已经不一样了。根据我粗浅的理解：这里需要确定何种情况下向`MPM`中导入`ObfuscationPass()`。我按照`llvm+clang17`的版本中的情况，将`ObfuscationPass()`导入到了`MPM`中。但是，有一些23.0新增的情况我不知道是否应该添加`ObfuscationPass()`到`MPM`中（我选择的是不添加）。所以这里可能存在一些问题，会导致混淆性能下降。
 
 
 
