@@ -70,7 +70,14 @@ cd build
 ```
 执行cmake配置，更改`-DCMAKE_INSTALL_PREFIX=`来改变安装位置
 ```shell
-cmake -G "Ninja"   -DCMAKE_INSTALL_PREFIX=$HOME/llvm   -DLLVM_ENABLE_PROJECTS="bolt;clang;clang-tools-extra;compiler-rt;cross-project-tests;libc;libclc;lld;lldb;mlir;pstl;flang;openmp;bolt"   -DLLVM_ENABLE_RUNTIMES="all"   -DLLVM_ENABLE_Z3_SOLVER=ON   -DLLVM_FORCE_BUILD_RUNTIME=ON      -DCMAKE_C_COMPILER=/home/ljs/llvm/bin/clang   -DCMAKE_CXX_COMPILER=/home/ljs/llvm/bin/clang++   -DCMAKE_CXX_COMPILER_TARGET=x86_64-pc-linux-gnu   -DCMAKE_C_COMPILER_TARGET=x86_64-pc-linux-gnu   -DCMAKE_CXX_FLAGS="-O3 -march=native  "   -DCMAKE_C_FLAGS="-O3 -march=native  "   -DLLVM_PROFILE_GENERATE=OFF   -DLIBCXX_INSTALL_MODULES=ON   -DCMAKE_AR=/home/ljs/llvm/bin/llvm-ar   -DCMAKE_RANLIB=/home/ljs/llvm/bin/llvm-ranlib   -DLLVM_ENABLE_OPENMP=ON   -DLLVM_ENABLE_LIBUNWIND=ON -DBOOTSTRAP_LLVM_ENABLE_LTO="Thin"  -DLLVM_ENABLE_LIBCXXABI=ON     -DCMAKE_BUILD_TYPE=Release   -DLLVM_BUILD_LLVM_DYLIB=ON   -DLLVM_LINK_LLVM_DYLIB=ON   -DLLVM_ENABLE_EXCEPTIONS=ON -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE  -DCMAKE_SHARED_LINKER_FLAGS="-Wl"    ../llvm
+cmake -G Ninja ../llvm \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_ENABLE_PROJECTS="clang;lld" \
+  -DLLVM_TARGETS_TO_BUILD="X86" \
+  \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DLLVM_USE_LINKER=lld
 ```
 
 
@@ -128,7 +135,8 @@ Ollvm虽然不及很多商业混淆器，但是效果仍然非常强，对付普
 ![2](https://github.com/user-attachments/assets/c334d06b-3199-409f-8ba5-7bac49265af3)
 
 ### 字符串加密
-![3](https://github.com/user-attachments/assets/744419c4-a30f-45de-a467-651c8bf5ee9a)
+<img width="1934" height="788" alt="屏幕截图 2026-03-28 164100" src="https://github.com/user-attachments/assets/10287b46-7f4d-4fc8-86b4-20b4f3ceeeb8" />
+
 
 
 ---
