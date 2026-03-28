@@ -27,6 +27,7 @@ using namespace omp;
 using namespace target;
 using namespace plugin;
 using namespace error;
+using namespace debug;
 
 Expected<std::unique_ptr<ObjectFile>>
 GenericGlobalHandlerTy::getELFObjectFile(DeviceImageTy &Image) {
@@ -75,12 +76,13 @@ Error GenericGlobalHandlerTy::moveGlobalBetweenDeviceAndHost(
       return Err;
   }
 
-  DP("Successfully %s %u bytes associated with global symbol '%s' %s the "
-     "device "
-     "(%p -> %p).\n",
-     Device2Host ? "read" : "write", HostGlobal.getSize(),
-     HostGlobal.getName().data(), Device2Host ? "from" : "to",
-     DeviceGlobal.getPtr(), HostGlobal.getPtr());
+  ODBG(ODT_DataTransfer) << "Successfully " << (Device2Host ? "read" : "write")
+                         << " " << HostGlobal.getSize()
+                         << " bytes associated with global symbol '"
+                         << HostGlobal.getName() << "' "
+                         << (Device2Host ? "from" : "to") << " the device ("
+                         << DeviceGlobal.getPtr() << " -> "
+                         << HostGlobal.getPtr() << ").";
 
   return Plugin::success();
 }
@@ -157,10 +159,11 @@ Error GenericGlobalHandlerTy::readGlobalFromImage(GenericDeviceTy &Device,
                          HostGlobal.getName().data(), ImageGlobal.getSize(),
                          HostGlobal.getSize());
 
-  DP("Global symbol '%s' was found in the ELF image and %u bytes will copied "
-     "from %p to %p.\n",
-     HostGlobal.getName().data(), HostGlobal.getSize(), ImageGlobal.getPtr(),
-     HostGlobal.getPtr());
+  ODBG(ODT_DataTransfer) << "Global symbol '" << HostGlobal.getName()
+                         << "' was found in the ELF image and "
+                         << HostGlobal.getSize() << " bytes will copied from "
+                         << ImageGlobal.getPtr() << " to "
+                         << HostGlobal.getPtr() << ".";
 
   assert(Image.getStart() <= ImageGlobal.getPtr() &&
          utils::advancePtr(ImageGlobal.getPtr(), ImageGlobal.getSize()) <
@@ -171,16 +174,6 @@ Error GenericGlobalHandlerTy::readGlobalFromImage(GenericDeviceTy &Device,
   std::memcpy(HostGlobal.getPtr(), ImageGlobal.getPtr(), HostGlobal.getSize());
 
   return Plugin::success();
-}
-
-bool GenericGlobalHandlerTy::hasProfilingGlobals(GenericDeviceTy &Device,
-                                                 DeviceImageTy &Image) {
-  GlobalTy global(getInstrProfNamesVarName().str(), 0);
-  if (auto Err = getGlobalMetadataFromImage(Device, Image, global)) {
-    consumeError(std::move(Err));
-    return false;
-  }
-  return true;
 }
 
 Expected<GPUProfGlobals>
@@ -204,12 +197,17 @@ GenericGlobalHandlerTy::readProfilingGlobals(GenericDeviceTy &Device,
     // Check if given current global is a profiling global based
     // on name
     if (*NameOrErr == getInstrProfNamesVarName()) {
-      // Read in profiled function names
-      DeviceProfileData.NamesData = SmallVector<uint8_t>(Sym.getSize(), 0);
-      GlobalTy NamesGlobal(NameOrErr->str(), Sym.getSize(),
-                           DeviceProfileData.NamesData.data());
-      if (auto Err = readGlobalFromDevice(Device, Image, NamesGlobal))
-        return Err;
+      // Read in profiled function names from ELF
+      auto SectionOrErr = Sym.getSection();
+      if (!SectionOrErr)
+        return SectionOrErr.takeError();
+
+      auto ContentsOrErr = (*SectionOrErr)->getContents();
+      if (!ContentsOrErr)
+        return ContentsOrErr.takeError();
+
+      SmallVector<uint8_t> NameBytes(ContentsOrErr->bytes());
+      DeviceProfileData.NamesData = NameBytes;
     } else if (NameOrErr->starts_with(getInstrProfCountersVarPrefix())) {
       // Read global variable profiling counts
       SmallVector<int64_t> Counts(Sym.getSize() / sizeof(int64_t), 0);
@@ -321,4 +319,8 @@ Error GPUProfGlobals::write() const {
                          "error writing GPU PGO data to file");
 
   return Plugin::success();
+}
+
+bool GPUProfGlobals::empty() const {
+  return Counts.empty() && Data.empty() && NamesData.empty();
 }

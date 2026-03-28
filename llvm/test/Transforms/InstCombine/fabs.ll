@@ -204,7 +204,7 @@ define float @square_fma_fabs_intrinsic_f32(float %x) {
 
 ; The fabs cannot be eliminated because %x may be a NaN
 
-define float @square_nnan_fma_fabs_intrinsic_f32(float %x) {
+define float @square_nnan_fma_fabs_intrinsic_f32(float noundef %x) {
 ; CHECK-LABEL: @square_nnan_fma_fabs_intrinsic_f32(
 ; CHECK-NEXT:    [[FMA:%.*]] = call nnan float @llvm.fma.f32(float [[X:%.*]], float [[X]], float 1.000000e+00)
 ; CHECK-NEXT:    ret float [[FMA]]
@@ -214,7 +214,7 @@ define float @square_nnan_fma_fabs_intrinsic_f32(float %x) {
   ret float %fabsf
 }
 
-define float @square_fmuladd_fabs_intrinsic_f32(float %x) {
+define float @square_fmuladd_fabs_intrinsic_f32(float noundef %x) {
 ; CHECK-LABEL: @square_fmuladd_fabs_intrinsic_f32(
 ; CHECK-NEXT:    [[FMULADD:%.*]] = call float @llvm.fmuladd.f32(float [[X:%.*]], float [[X]], float 1.000000e+00)
 ; CHECK-NEXT:    [[FABSF:%.*]] = call float @llvm.fabs.f32(float [[FMULADD]])
@@ -225,7 +225,7 @@ define float @square_fmuladd_fabs_intrinsic_f32(float %x) {
   ret float %fabsf
 }
 
-define float @square_nnan_fmuladd_fabs_intrinsic_f32(float %x) {
+define float @square_nnan_fmuladd_fabs_intrinsic_f32(float noundef %x) {
 ; CHECK-LABEL: @square_nnan_fmuladd_fabs_intrinsic_f32(
 ; CHECK-NEXT:    [[FMULADD:%.*]] = call nnan float @llvm.fmuladd.f32(float [[X:%.*]], float [[X]], float 1.000000e+00)
 ; CHECK-NEXT:    ret float [[FMULADD]]
@@ -1522,7 +1522,7 @@ define float @test_fabs_nsz_used_by_frem(float %x) {
 define half @test_fabs_nsz_used_by_fptrunc(float %x) {
 ; CHECK-LABEL: @test_fabs_nsz_used_by_fptrunc(
 ; CHECK-NEXT:    [[TMP1:%.*]] = fptrunc float [[X:%.*]] to half
-; CHECK-NEXT:    [[OP:%.*]] = call nsz half @llvm.fabs.f16(half [[TMP1]])
+; CHECK-NEXT:    [[OP:%.*]] = call half @llvm.fabs.f16(half [[TMP1]])
 ; CHECK-NEXT:    ret half [[OP]]
 ;
   %cmp = fcmp oge float %x, 0.000000e+00
