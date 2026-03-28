@@ -235,6 +235,32 @@ bool hasApplePtrauth(Module *M) {
   return false;
 }
 
+Type *GetPointerTypeCompat(LLVMContext &Ctx, Type *PointeeTy) {
+#if LLVM_VERSION_MAJOR >= 17
+  (void)PointeeTy;
+  return PointerType::get(Ctx, 0);
+#else
+  return PointerType::getUnqual(PointeeTy);
+#endif
+}
+
+Type *GetInt8PtrTypeCompat(LLVMContext &Ctx) {
+  return GetPointerTypeCompat(Ctx, Type::getInt8Ty(Ctx));
+}
+
+Type *GetInt32PtrTypeCompat(LLVMContext &Ctx) {
+  return GetPointerTypeCompat(Ctx, Type::getInt32Ty(Ctx));
+}
+
+Constant *CreateGlobalStringPtrCompat(IRBuilderBase &IRB, Module &M,
+                                      StringRef Str, const Twine &Name) {
+  GlobalVariable *GV = IRB.CreateGlobalString(Str, Name, 0, &M);
+  Type *Int32Ty = Type::getInt32Ty(M.getContext());
+  Constant *Zero = ConstantInt::get(Int32Ty, 0);
+  return ConstantExpr::getInBoundsGetElementPtr(
+      GV->getValueType(), GV, ArrayRef<Constant *>({Zero, Zero}));
+}
+
 void FixBasicBlockConstantExpr(BasicBlock *BB) {
   // Replace ConstantExpr with equal instructions
   // Otherwise replacing on Constant will crash the compiler

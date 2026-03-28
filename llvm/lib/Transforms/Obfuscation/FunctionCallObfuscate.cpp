@@ -74,11 +74,11 @@ struct FunctionCallObfuscate : public FunctionPass {
     }
     this->triple = Triple(M.getTargetTriple());
     if (triple.getVendor() == Triple::VendorType::Apple) {
-      Type *Int8PtrTy = Type::getInt8Ty(M.getContext())->getPointerTo();
+      Type *Int8PtrTy = GetInt8PtrTypeCompat(M.getContext());
       // Generic ObjC Runtime Declarations
       FunctionType *IMPType =
           FunctionType::get(Int8PtrTy, {Int8PtrTy, Int8PtrTy}, true);
-      PointerType *IMPPointerType = PointerType::get(IMPType, 0);
+      Type *IMPPointerType = GetPointerTypeCompat(M.getContext(), IMPType);
       FunctionType *class_replaceMethod_type = FunctionType::get(
           IMPPointerType, {Int8PtrTy, Int8PtrTy, IMPPointerType, Int8PtrTy},
           false);
@@ -154,7 +154,7 @@ struct FunctionCallObfuscate : public FunctionPass {
           Function *objc_getClass_Func =
               cast<Function>(M->getFunction("objc_getClass"));
           Value *newClassName =
-              builder.CreateGlobalStringPtr(StringRef(className));
+              CreateGlobalStringPtrCompat(builder, *M, StringRef(className));
           CallInst *CI = builder.CreateCall(objc_getClass_Func, {newClassName});
           // We need to bitcast it back to avoid IRVerifier
           Value *BCI = builder.CreateBitCast(CI, I->getType());
@@ -178,7 +178,8 @@ struct FunctionCallObfuscate : public FunctionPass {
           IRBuilder<> builder(I);
           Function *sel_registerName_Func =
               cast<Function>(M->getFunction("sel_registerName"));
-          Value *newGlobalSELName = builder.CreateGlobalStringPtr(SELName);
+          Value *newGlobalSELName =
+              CreateGlobalStringPtrCompat(builder, *M, SELName);
           CallInst *CI =
               builder.CreateCall(sel_registerName_Func, {newGlobalSELName});
           // We need to bitcast it back to avoid IRVerifier
@@ -270,7 +271,7 @@ struct FunctionCallObfuscate : public FunctionPass {
     FixFunctionConstantExpr(&F);
     HandleObjC(&F);
     Type *Int32Ty = Type::getInt32Ty(M->getContext());
-    Type *Int8PtrTy = Type::getInt8Ty(M->getContext())->getPointerTo();
+    Type *Int8PtrTy = GetInt8PtrTypeCompat(M->getContext());
     // ObjC Runtime Declarations
     FunctionType *dlopen_type = FunctionType::get(
         Int8PtrTy, {Int8PtrTy, Int32Ty},
@@ -344,7 +345,8 @@ struct FunctionCallObfuscate : public FunctionPass {
             // Create dlsym call
             Value *fp = IRB.CreateCall(
                 dlsym_decl,
-                {Handle, IRB.CreateGlobalStringPtr(calledFunctionName)});
+                {Handle, CreateGlobalStringPtrCompat(IRB, *M,
+                                                     calledFunctionName)});
             Value *bitCastedFunction =
                 IRB.CreateBitCast(fp, CS.getCalledValue()->getType());
             CS.setCalledFunction(bitCastedFunction);

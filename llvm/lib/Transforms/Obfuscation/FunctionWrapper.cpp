@@ -187,11 +187,7 @@ struct FunctionWrapper : public ModulePass {
         CS->getFunctionType(),
         ConstantExpr::getBitCast(cast<Function>(calledFunction),
                                  CS->getCalledValue()->getType()),
-#if LLVM_VERSION_MAJOR >= 16
-        ArrayRef<Value *>(params), std::nullopt, "", BB);
-#else
-        ArrayRef<Value *>(params), None, "", BB);
-#endif
+        ArrayRef<Value *>(params), "", BB);
     if (ft->getReturnType()->isVoidTy()) {
       ReturnInst::Create(BB->getContext(), BB);
     } else {

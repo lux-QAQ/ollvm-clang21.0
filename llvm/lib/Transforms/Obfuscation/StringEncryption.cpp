@@ -233,8 +233,7 @@ struct StringEncryption : public ModulePass {
         }
       }
     for (GlobalVariable *GV : rawStrings) {
-      if (GV->getInitializer()->isZeroValue() ||
-          GV->getInitializer()->isNullValue())
+      if (GV->getInitializer()->isNullValue())
         continue;
       ConstantDataSequential *CDS =
           dyn_cast<ConstantDataSequential>(GV->getInitializer());

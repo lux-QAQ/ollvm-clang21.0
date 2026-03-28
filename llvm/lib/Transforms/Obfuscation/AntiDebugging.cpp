@@ -251,10 +251,10 @@ struct AntiDebugging : public ModulePass {
         Instruction *I = nullptr;
         for (BasicBlock &BB : F)
           I = BB.getTerminator();
-#if LLVM_VERSION_MAJOR >= 16
-        CallInst::Create(IA, std::nullopt, "", I);
+#if LLVM_VERSION_MAJOR >= 19
+        CallInst::Create(IA->getFunctionType(), IA, {}, "", I->getIterator());
 #else
-        CallInst::Create(IA, None, "", I);
+        CallInst::Create(IA->getFunctionType(), IA, {}, "", I);
 #endif
       } else {
         errs() << "Unsupported Inline Assembly AntiDebugging Target: "
