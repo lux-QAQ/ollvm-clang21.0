@@ -14,6 +14,7 @@ add_llvm_component_library(LLVMObfuscation
         IndirectBranch.cpp
         FunctionWrapper.cpp
         ConstantEncryption.cpp
+        support/IRUtils.cpp
         Obfuscation.cpp
         
         DEPENDS

@@ -8,6 +8,7 @@
 #include "llvm/Transforms/Obfuscation/CryptoUtils.h"
 #include "llvm/Transforms/Obfuscation/Utils.h"
 #include "llvm/Transforms/Utils/LowerSwitch.h"
+#include "support/IRUtils.h"
 
 using namespace llvm;
 
@@ -104,11 +105,11 @@ void Flattening::flatten(Function *f) {
   Instruction *oldTerm = insert->getTerminator();
 
   // Create switch variable and set as it
-  switchVar = new AllocaInst(Type::getInt32Ty(f->getContext()),
-                             DL.getAllocaAddrSpace(), "switchVar", oldTerm);
-  switchVarAddr =
-      new AllocaInst(Type::getInt32Ty(f->getContext())->getPointerTo(),
-                     DL.getAllocaAddrSpace(), "", oldTerm);
+  switchVar = createEntryBlockAlloca(*f, Type::getInt32Ty(f->getContext()),
+                                     DL.getAllocaAddrSpace(), "switchVar");
+  switchVarAddr = createEntryBlockAlloca(
+      *f, Type::getInt32Ty(f->getContext())->getPointerTo(),
+      DL.getAllocaAddrSpace());
 
   // Remove jump
   oldTerm->eraseFromParent();

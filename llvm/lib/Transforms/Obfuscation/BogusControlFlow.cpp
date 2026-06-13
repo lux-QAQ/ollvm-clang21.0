@@ -100,6 +100,7 @@
 #include "llvm/Transforms/Utils/Cloning.h"
 #include "llvm/Transforms/Utils/Local.h"
 #include "llvm/Transforms/Utils/ValueMapper.h"
+#include "support/IRUtils.h"
 #include <memory> // Required for std::unique_ptr
 
 using namespace llvm;
@@ -320,26 +321,14 @@ struct BogusControlFlow : public FunctionPass {
     // part, because they actually are updated in the second part according to
     // them.
     BasicBlock::iterator i1 = basicBlock->begin();
-    if (basicBlock->getFirstNonPHIOrDbgOrLifetime()!= basicBlock->end())
-      i1 = (BasicBlock::iterator)basicBlock->getFirstNonPHIOrDbgOrLifetime();
-
-    // https://github.com/eshard/obfuscator-llvm/commit/85c8719c86bcb4784f5a436e28f3496e91cd6292
-    /* TODO: find a real fix or try with the probe-stack inline-asm when its
-     * ready. See https://github.com/Rust-for-Linux/linux/issues/355. Sometimes
-     * moving an alloca from the entry block to the second block causes a
-     * segfault when using the "probe-stack" attribute (observed with with Rust
-     * programs). To avoid this issue we just split the entry block after the
-     * allocas in this case.
-     */
-    if (F.hasFnAttribute("probe-stack") && basicBlock->isEntryBlock()) {
-      // Find the first non alloca instruction
-      while ((i1 != basicBlock->end()) && isa<AllocaInst>(i1))
-        i1++;
-
-      // If there are no other kind of instruction we just don't split that
-      // entry block
-      if (i1 == basicBlock->end())
+    if (basicBlock->isEntryBlock()) {
+      Instruction *InsertBefore = getEntryAllocaInsertBefore(F);
+      if (!InsertBefore)
         return;
+      i1 = InsertBefore->getIterator();
+    } else if (basicBlock->getFirstNonPHIOrDbgOrLifetime() !=
+               basicBlock->end()) {
+      i1 = (BasicBlock::iterator)basicBlock->getFirstNonPHIOrDbgOrLifetime();
     }
 
     BasicBlock *originalBB = basicBlock->splitBasicBlock(i1, "originalBB");

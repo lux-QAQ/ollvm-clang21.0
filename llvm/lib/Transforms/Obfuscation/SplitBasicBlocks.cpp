@@ -6,6 +6,8 @@
 #include "llvm/Transforms/Obfuscation/CryptoUtils.h"
 #include "llvm/Transforms/Obfuscation/Split.h"
 #include "llvm/Transforms/Obfuscation/Utils.h"
+#include "support/IRUtils.h"
+#include <algorithm>
 
 using namespace llvm;
 
@@ -53,16 +55,23 @@ struct SplitBasicBlock : public FunctionPass {
           containsSwiftError(currBB))
         continue;
 
-      if ((size_t)SplitNumTemp > currBB->size() - 1)
-        split_ctr = currBB->size() - 1;
-      else
-        split_ctr = (size_t)SplitNumTemp;
-
       // Generate splits point (count number of the LLVM instructions in the
       // current BB)
       SmallVector<size_t, 32> llvm_inst_ord;
-      for (size_t i = 1; i < currBB->size(); ++i)
+      size_t first_split_ord = 1;
+      if (currBB->isEntryBlock())
+        first_split_ord =
+            std::max(first_split_ord, getEntryAllocaInsertIndex(*F));
+
+      for (size_t i = first_split_ord; i < currBB->size(); ++i)
         llvm_inst_ord.emplace_back(i);
+      if (llvm_inst_ord.empty())
+        continue;
+
+      if ((size_t)SplitNumTemp > llvm_inst_ord.size())
+        split_ctr = llvm_inst_ord.size();
+      else
+        split_ctr = (size_t)SplitNumTemp;
 
       // Shuffle
       split_point_shuffle(llvm_inst_ord);
@@ -78,18 +87,6 @@ struct SplitBasicBlock : public FunctionPass {
           ++curr_bb_it;
 
         llvm_inst_prev_offset = llvm_inst_ord[i];
-
-        // https://github.com/eshard/obfuscator-llvm/commit/fff24c7a1555aa3ae7160056b06ba1e0b3d109db
-        /* TODO: find a real fix or try with the probe-stack inline-asm when its
-         * ready. See https://github.com/Rust-for-Linux/linux/issues/355.
-         * Sometimes moving an alloca from the entry block to the second block
-         * causes a segfault when using the "probe-stack" attribute (observed
-         * with with Rust programs). To avoid this issue we just split the entry
-         * block after the allocas in this case.
-         */
-        if (F->hasFnAttribute("probe-stack") && currBB->isEntryBlock() &&
-            isa<AllocaInst>(curr_bb_it))
-          continue;
 
         curr_bb_offset = curr_bb_offset->splitBasicBlock(
             curr_bb_it, curr_bb_offset->getName() + ".split");
