@@ -2403,6 +2403,9 @@ void Driver::PrintVersion(const Compilation &C, raw_ostream &OS) const {
     // know what the client would like to do.
     OS << getClangFullVersion() << '\n';
   }
+  OS << "\033[34m项目地址: \033[3mhttps://github.com/ollvm-adaplite/ollvm-clang\033[0m\n" ;
+  OS << "\033[34m如果你觉得本项目对你有帮助请点个star ⭐\033[0m\n" ;
+  
   const ToolChain &TC = C.getDefaultToolChain();
   OS << "Target: " << TC.getTripleString() << '\n';
 
